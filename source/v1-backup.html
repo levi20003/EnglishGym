@@ -1,0 +1,641 @@
+<title>Paulik's English Gym</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky top bar with level + streak, tab rail, one working panel per mode, max 960px */
+:root{
+  --bg:#f4f5f9; --surface:#ffffff; --sunk:#eceef5; --line:#d9dce8;
+  --fg:#161a2e; --muted:#5b6078; --accent:#2f4fd8; --accent-ink:#ffffff; --accent-soft:#e3e8fc;
+  --warm:#c2540a; --warm-soft:#fbe9dc; --good:#1f8a4c; --good-soft:#e0f3e7; --bad:#c22f3a; --bad-soft:#fbe4e6;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10121c; --surface:#181b29; --sunk:#202436; --line:#2d3247;
+  --fg:#e9ebf5; --muted:#9aa0bb; --accent:#7f97ff; --accent-ink:#0d1020; --accent-soft:#232c55;
+  --warm:#f59a5b; --warm-soft:#3a2617; --good:#5cc98a; --good-soft:#173324; --bad:#f17a83; --bad-soft:#3b1c20; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10121c; --surface:#181b29; --sunk:#202436; --line:#2d3247;
+  --fg:#e9ebf5; --muted:#9aa0bb; --accent:#7f97ff; --accent-ink:#0d1020; --accent-soft:#232c55;
+  --warm:#f59a5b; --warm-soft:#3a2617; --good:#5cc98a; --good-soft:#173324; --bad:#f17a83; --bad-soft:#3b1c20; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.topin{display:flex;align-items:center;gap:12px;padding-block:12px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.01em;margin-right:auto}
+.brand span{color:var(--accent)}
+.pill{font-family:var(--mono);font-size:12px;padding:4px 10px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.pill.lvl{background:var(--accent);color:var(--accent-ink)}
+.pill.fire{background:var(--warm-soft);color:var(--warm)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:0 0 auto;border:0;background:transparent;color:var(--muted);font:500 14px var(--body);padding:7px 12px;border-radius:8px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+nav.tabs button:hover{color:var(--fg)}
+main{padding-block:24px 64px;display:grid;gap:20px}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.015em;text-wrap:balance;margin:0}
+h1{font-size:28px;line-height:1.15}
+h2{font-size:21px}
+h3{font-size:16px}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.eyebrow{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:14px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 14px var(--body);padding:9px 16px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent);padding-inline:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible,nav.tabs button:focus-visible,.opt:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.banner{background:var(--accent-soft);border-radius:var(--r);padding:16px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.banner p{flex:1 1 260px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.stat{background:var(--sunk);border-radius:8px;padding:12px 14px}
+.stat b{display:block;font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.mission{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.mission li{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:8px}
+.mission li .t{flex:1;min-width:0}
+.mission li .min{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.check{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto}
+.check.on{background:var(--good);border-color:var(--good)}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:4px;background:var(--sunk);color:var(--muted)}
+.tag.it{background:var(--accent-soft);color:var(--accent)}
+.tag.gen{background:var(--warm-soft);color:var(--warm)}
+/* flashcard */
+.card{border:1px solid var(--line);border-radius:14px;padding:28px 24px;min-height:220px;display:grid;align-content:center;gap:10px;text-align:center;background:var(--surface)}
+.card .word{font-family:var(--display);font-size:34px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}
+.card .def{font-size:16px}
+.card .ex{font-style:italic;color:var(--muted)}
+.rate{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rate .btn{display:grid;gap:2px;padding:10px 6px;text-align:center}
+.rate .btn small{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.rate .again{border-color:var(--bad)} .rate .easy{border-color:var(--good)}
+/* quiz */
+.opts{display:grid;gap:8px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:15px var(--body);padding:11px 14px;border-radius:8px;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.progressbar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.progressbar i{display:block;height:100%;background:var(--accent)}
+textarea,input[type=text],select{width:100%;font:15px var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+textarea{min-height:200px;resize:vertical;line-height:1.6}
+label.f{display:grid;gap:6px;font-weight:500;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}
+.chips input{accent-color:var(--accent)}
+.fb{display:grid;gap:12px}
+.score{font-family:var(--display);font-size:40px;font-weight:700;color:var(--accent);line-height:1}
+.corr{border-left:3px solid var(--warm);padding:6px 12px;display:grid;gap:2px;background:var(--sunk);border-radius:0 6px 6px 0}
+.corr del{color:var(--bad)} .corr ins{color:var(--good);text-decoration:none;font-weight:600}
+.chat{display:grid;gap:10px;max-height:420px;overflow-y:auto;padding:4px}
+.msg{max-width:85%;padding:10px 14px;border-radius:12px;overflow-wrap:anywhere}
+.msg.them{background:var(--sunk);justify-self:start;border-bottom-left-radius:4px}
+.msg.me{background:var(--accent);color:var(--accent-ink);justify-self:end;border-bottom-right-radius:4px}
+.msg .who{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;opacity:.7;display:flex;gap:6px;align-items:center}
+.speak{border:0;background:none;color:inherit;cursor:pointer;font-size:12px;padding:0;text-decoration:underline}
+.scen{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.scen button{text-align:left;display:grid;gap:4px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:14px;border-radius:10px;cursor:pointer;font:14px var(--body)}
+.scen button:hover{border-color:var(--accent)}
+.scen b{font-family:var(--display);font-size:16px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:500}
+td.num{font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.tablewrap{overflow-x:auto}
+.bars{display:flex;align-items:flex-end;gap:4px;height:90px;border-bottom:1px solid var(--line)}
+.bars div{flex:1;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px;position:relative}
+.bars div.zero{background:var(--line)}
+.barlabels{display:flex;gap:4px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.barlabels span{flex:1;text-align:center}
+.note{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:8px;font-size:14px;z-index:20}
+.thinking{color:var(--muted);font-style:italic}
+@media (prefers-reduced-motion: no-preference){.card,.panel{animation:rise .25s ease-out}@keyframes rise{from{transform:translateY(4px)}to{transform:none}}}
+@media (max-width:480px){.card .word{font-size:28px}.rate .btn{font-size:13px}h1{font-size:24px}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="topin">
+      <div class="brand">English <span>Gym</span></div>
+      <span class="pill lvl" id="hdrLevel">Level ?</span>
+      <span class="pill fire" id="hdrStreak">0-day streak</span>
+      <span class="pill" id="hdrSync">Saving on this device</span>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------------- Content ---------------- */
+const LEVELS=["A2","B1","B2","C1"];
+const DECK=[
+// General track
+["get the hang of","phrase","to learn how to do something after some practice","After a week I finally got the hang of the new keyboard shortcuts.","gen","B1"],
+["look forward to","phrasal verb","to feel happy about something that will happen","I'm looking forward to the summer break.","gen","B1"],
+["put off","phrasal verb","to delay doing something","Stop putting off your thesis and write one page today.","gen","B1"],
+["figure out","phrasal verb","to understand or solve something after thinking","I can't figure out why the test keeps failing.","gen","B1"],
+["come up with","phrasal verb","to think of an idea or plan","We need to come up with a name for the app.","gen","B1"],
+["turn down","phrasal verb","to refuse an offer or request","She turned down the job because the salary was too low.","gen","B1"],
+["make sense","phrase","to be clear and logical","Does this explanation make sense to you?","gen","A2"],
+["take part in","phrase","to join an activity","Over 200 students took part in the hackathon.","gen","A2"],
+["on the other hand","linker","used to give a contrasting point","The city is expensive. On the other hand, the salaries are higher.","gen","B1"],
+["nevertheless","linker","despite what was just said","The task was hard; nevertheless, we finished on time.","gen","B2"],
+["whereas","linker","compares two different facts","I prefer backend work, whereas my friend loves design.","gen","B2"],
+["reluctant","adjective","not willing to do something","He was reluctant to speak English in class at first.","gen","B2"],
+["overwhelmed","adjective","having too much to deal with","I felt overwhelmed during the exam period.","gen","B1"],
+["straightforward","adjective","easy to understand or do","The installation is pretty straightforward.","gen","B2"],
+["thorough","adjective","careful and complete","She did a thorough review of the code.","gen","B2"],
+["eventually","adverb","in the end, after a long time","Eventually we found the bug in the config file.","gen","B1"],
+["a piece of cake","idiom","something very easy","The first assignment was a piece of cake.","gen","B1"],
+["break the ice","idiom","to make people feel relaxed in a new situation","He told a joke to break the ice at the meeting.","gen","B2"],
+["cut corners","idiom","to do something badly to save time or money","If you cut corners on testing, users will find the bugs.","gen","B2"],
+["the bottom line","idiom","the most important fact","The bottom line is that we need more users.","gen","C1"],
+["make ends meet","idiom","to have just enough money to live","Many students work part-time to make ends meet.","gen","B2"],
+["commute","noun/verb","the regular journey to work or school","My commute to the university takes 20 minutes by tram.","gen","B1"],
+["take for granted","phrase","to not value something because it is always there","We take fast internet for granted.","gen","B2"],
+["drawback","noun","a disadvantage","The main drawback of remote work is isolation.","gen","B2"],
+["inevitable","adjective","certain to happen","Some mistakes are inevitable when you learn a language.","gen","C1"],
+["nuance","noun","a very small difference in meaning","Native speakers notice the nuance between 'job' and 'career'.","gen","C1"],
+["albeit","conjunction","although (formal)","The plan worked, albeit more slowly than expected.","gen","C1"],
+["keep in mind","phrase","to remember something important","Keep in mind that the deadline is Friday.","gen","B1"],
+["to be honest","phrase","used before saying what you really think","To be honest, I didn't enjoy the film.","gen","A2"],
+["run out of","phrasal verb","to have none left","We ran out of time before the last question.","gen","B1"],
+// IT & Business track
+["deploy","verb","to release software so it runs in production","We deploy a new version every Thursday.","it","B1"],
+["deadline","noun","the time by which something must be finished","The deadline for the project report is next Monday.","it","A2"],
+["stakeholder","noun","a person with an interest in a project or company","We presented the prototype to the main stakeholders.","it","B2"],
+["scalable","adjective","able to grow and handle more users or data","The architecture needs to be scalable to a million users.","it","B2"],
+["bottleneck","noun","a point where a process slows down","The database query is the bottleneck of the whole app.","it","B2"],
+["requirements","noun","what a system must do","The client changed the requirements twice this sprint.","it","B1"],
+["sprint","noun","a short fixed work period in Scrum","In this sprint we focus on the payment feature.","it","B1"],
+["stand-up","noun","a short daily team meeting","In the stand-up I said what I did yesterday and what I'll do today.","it","B1"],
+["backlog","noun","a list of tasks still to be done","Let's add that idea to the backlog.","it","B1"],
+["workaround","noun","a temporary way to avoid a problem","There's no fix yet, but there is a workaround.","it","B2"],
+["troubleshoot","verb","to find and fix problems","I spent the morning troubleshooting the network.","it","B2"],
+["legacy system","noun","an old system still in use","Many banks still run legacy systems written in COBOL.","it","B2"],
+["revenue","noun","money a company earns from sales","Our revenue grew by 15% this quarter.","it","B1"],
+["profit margin","noun","the percentage of revenue that is profit","Software has a higher profit margin than hardware.","it","B2"],
+["ROI","abbreviation","return on investment: profit compared to cost","The ROI of the new CRM system was positive after one year.","it","B2"],
+["KPI","abbreviation","key performance indicator: a measurable goal","Our main KPI is monthly active users.","it","B2"],
+["outsource","verb","to pay another company to do work","They outsource customer support to a firm in Portugal.","it","B2"],
+["data breach","noun","an incident where private data is stolen","The data breach affected two million customers.","it","B2"],
+["compliance","noun","following laws and rules, e.g. GDPR","GDPR compliance is required for all EU customers.","it","C1"],
+["leverage","verb","to use something to get the best result","We can leverage cloud services to cut costs.","it","C1"],
+["streamline","verb","to make a process simpler and more efficient","The new tool streamlines our invoicing process.","it","C1"],
+["benchmark","noun/verb","a standard to compare performance","We benchmarked three databases before choosing one.","it","B2"],
+["follow up","phrasal verb","to contact someone again about something","I'll follow up with an email after the meeting.","it","B1"],
+["touch base","idiom","to briefly contact someone","Let's touch base on Friday about the release.","it","B2"],
+["on the same page","idiom","to agree and understand the same thing","Before coding, let's make sure we're on the same page.","it","B2"],
+["ballpark figure","idiom","a rough estimate","Can you give me a ballpark figure for the cost?","it","C1"],
+["user-friendly","adjective","easy for people to use","The new dashboard is much more user-friendly.","it","B1"],
+["feasibility","noun","how possible or practical something is","We did a feasibility study before the project.","it","C1"],
+["roll out","phrasal verb","to introduce a new product or system gradually","We'll roll out the update to 10% of users first.","it","B2"],
+["attachment","noun","a file sent with an email","Please find the report in the attachment.","it","A2"]
+].map((d,i)=>({id:"d"+i,w:d[0],pos:d[1],def:d[2],ex:d[3],track:d[4],lvl:d[5]}));
+
+const PLACEMENT=[
+// A2
+{q:"She ___ to the gym every Tuesday.",o:["go","goes","going","is go"],a:1,lvl:"A2"},
+{q:"I ___ my keys yesterday.",o:["lose","lost","have lost","losing"],a:1,lvl:"A2"},
+{q:"There isn't ___ milk in the fridge.",o:["some","many","any","a"],a:2,lvl:"A2"},
+{q:"This laptop is ___ than my old one.",o:["more fast","fastest","faster","more faster"],a:2,lvl:"A2"},
+{q:"We met ___ Monday morning.",o:["in","at","on","by"],a:2,lvl:"A2"},
+// B1
+{q:"I ___ in Szeged since 2021.",o:["live","am living","have lived","lived"],a:2,lvl:"B1"},
+{q:"If it rains tomorrow, we ___ at home.",o:["stay","will stay","would stay","stayed"],a:1,lvl:"B1"},
+{q:"The report ___ by the manager last week.",o:["wrote","was written","has written","is writing"],a:1,lvl:"B1"},
+{q:"I'm not used to ___ up so early.",o:["get","getting","got","be getting"],a:1,lvl:"B1"},
+{q:"Choose the best word: 'We need to ___ a decision today.'",o:["do","make","take on","give"],a:1,lvl:"B1"},
+// B2
+{q:"If I ___ about the problem earlier, I would have fixed it.",o:["knew","had known","have known","would know"],a:1,lvl:"B2"},
+{q:"By the time we arrived, the meeting ___.",o:["already started","has already started","had already started","was already start"],a:2,lvl:"B2"},
+{q:"She suggested ___ the release until Monday.",o:["to postpone","postponing","postpone","that postponing"],a:1,lvl:"B2"},
+{q:"'Despite ___ tired, he finished the code.'",o:["he was","being","of being","to be"],a:1,lvl:"B2"},
+{q:"Which sentence is most formal?",o:["Can you send me the file?","Send the file, thanks.","Could you possibly send me the file?","Gimme the file pls."],a:2,lvl:"B2"},
+// C1
+{q:"Not only ___ the deadline, but they also exceeded the budget.",o:["they missed","did they miss","they did miss","missed they"],a:1,lvl:"C1"},
+{q:"The project, ___ was launched in May, has already turned a profit.",o:["that","which","what","who"],a:1,lvl:"C1"},
+{q:"Had we tested it properly, the bug ___.",o:["wouldn't have occurred","won't occur","didn't occur","hadn't occurred"],a:0,lvl:"C1"},
+{q:"Closest meaning of 'to mitigate a risk':",o:["to ignore it","to reduce it","to create it","to measure it"],a:1,lvl:"C1"},
+{q:"'It's high time we ___ a new strategy.'",o:["adopt","adopted","will adopt","have adopted"],a:1,lvl:"C1"}
+];
+
+const GRAMMAR=[
+{q:"I've been working here ___ three years.",o:["since","for","during","from"],a:1,t:"prepositions",n:"'for' + a period of time; 'since' + a starting point.",lvl:"B1"},
+{q:"She's ___ engineer at a software company.",o:["a","an","the","—"],a:1,t:"articles",n:"'an' before a vowel sound.",lvl:"A2"},
+{q:"___ internet has changed how we work.",o:["A","An","The","—"],a:2,t:"articles",n:"'the internet' is unique, so it takes 'the'.",lvl:"B1"},
+{q:"I'm interested ___ machine learning.",o:["on","about","in","for"],a:2,t:"prepositions",n:"interested in.",lvl:"B1"},
+{q:"It depends ___ the budget.",o:["of","from","on","in"],a:2,t:"prepositions",n:"depend on (Hungarian 'függ vmitől' tempts 'from').",lvl:"B1"},
+{q:"We discussed ___ the new feature.",o:["about","on","—","over"],a:2,t:"prepositions",n:"'discuss' takes no preposition.",lvl:"B2"},
+{q:"I ___ this bug three times this week.",o:["fixed","have fixed","fix","had fixed"],a:1,t:"tenses",n:"'this week' is unfinished time: present perfect.",lvl:"B1"},
+{q:"Yesterday I ___ the presentation.",o:["have finished","finished","had finish","finish"],a:1,t:"tenses",n:"Finished past time ('yesterday'): past simple.",lvl:"A2"},
+{q:"Where ___ you work?",o:["do","are","does","—"],a:0,t:"word order",n:"Questions need the auxiliary 'do'.",lvl:"A2"},
+{q:"Can you tell me where ___?",o:["is the server room","the server room is","is server room","the server room"],a:1,t:"word order",n:"Indirect questions use statement word order.",lvl:"B2"},
+{q:"If I ___ more time, I would learn Rust.",o:["have","had","would have","will have"],a:1,t:"conditionals",n:"Second conditional: if + past, would + verb.",lvl:"B1"},
+{q:"The data ___ every night at 2 am.",o:["backs up","is backed up","is backing","backed up"],a:1,t:"passive",n:"The data does not do the action: passive.",lvl:"B1"},
+{q:"I look forward to ___ from you.",o:["hear","hearing","heard","be hearing"],a:1,t:"verb patterns",n:"'look forward to' + -ing.",lvl:"B1"},
+{q:"He made me ___ the whole report again.",o:["to write","writing","write","wrote"],a:2,t:"verb patterns",n:"make someone + bare infinitive.",lvl:"B2"},
+{q:"We need ___ information before we decide.",o:["more","many","a few","several"],a:0,t:"countables",n:"'information' is uncountable.",lvl:"B1"},
+{q:"Can you give me some ___ on my CV?",o:["advices","advice","an advice","advise"],a:1,t:"countables",n:"'advice' is uncountable; 'advise' is the verb.",lvl:"B1"},
+{q:"I ___ a mistake in the calculation.",o:["did","made","took","had"],a:1,t:"collocations",n:"make a mistake.",lvl:"A2"},
+{q:"Let's ___ a break.",o:["make","do","take","have got"],a:2,t:"collocations",n:"take a break.",lvl:"A2"},
+{q:"She ___ a lot of research before the interview.",o:["made","did","took","gave"],a:1,t:"collocations",n:"do research.",lvl:"B1"},
+{q:"The meeting is ___ 3 pm ___ Friday.",o:["at / on","in / at","on / in","at / in"],a:0,t:"prepositions",n:"at + clock time, on + day.",lvl:"A2"},
+{q:"I wish I ___ more English at school.",o:["studied","had studied","have studied","would study"],a:1,t:"conditionals",n:"Regret about the past: wish + past perfect.",lvl:"B2"},
+{q:"___ the project was difficult, we enjoyed it.",o:["Despite","Although","However","In spite"],a:1,t:"linkers",n:"'Although' + clause; 'despite' + noun / -ing.",lvl:"B2"},
+{q:"The app is popular. ___, it has some security issues.",o:["Although","However","Despite","Whereas"],a:1,t:"linkers",n:"'However' starts a new sentence with a comma.",lvl:"B1"},
+{q:"I'm ___ at public speaking.",o:["not good","not well","no good in","bad in"],a:0,t:"adjectives",n:"good/bad at something.",lvl:"A2"},
+{q:"She has ___ experience with cloud platforms.",o:["a lot of","many","a few","much of"],a:0,t:"countables",n:"'experience' (skill) is uncountable.",lvl:"B1"},
+{q:"The software ___ for two years before it was replaced.",o:["was used","has been used","is used","uses"],a:0,t:"passive",n:"Finished past period + passive.",lvl:"B2"},
+{q:"Hardly ___ the server restarted when it crashed again.",o:["had","has","did","was"],a:0,t:"inversion",n:"Hardly had ... when ... (inversion).",lvl:"C1"},
+{q:"I'd rather you ___ the code before pushing.",o:["test","tested","will test","testing"],a:1,t:"verb patterns",n:"would rather + someone + past simple.",lvl:"C1"},
+{q:"He is ___ best developer in our team.",o:["a","—","the","most"],a:2,t:"articles",n:"Superlatives take 'the'.",lvl:"A2"},
+{q:"Please reply ___ this email by Friday.",o:["—","on","to","at"],a:2,t:"prepositions",n:"reply to something.",lvl:"B1"}
+];
+
+const PROMPTS=[
+{t:"it",lvl:"B1",title:"Email to a lecturer",task:"Write an email to your lecturer asking for a one-week extension for a project. Explain why and suggest a new date. (120-180 words)"},
+{t:"it",lvl:"B1",title:"Stand-up update",task:"Write your daily stand-up update: what you did yesterday, what you will do today, and one blocker. (80-120 words)"},
+{t:"it",lvl:"B2",title:"Bug report",task:"Write a clear bug report for a web app: steps to reproduce, expected result, actual result, and impact. (150-200 words)"},
+{t:"it",lvl:"B2",title:"LinkedIn 'About' section",task:"Write your LinkedIn About section as a Business IT student in Szeged: skills, projects, and what role you are looking for. (150-220 words)"},
+{t:"it",lvl:"B2",title:"Tool recommendation",task:"Your manager asks which project management tool the team should use (Jira, Trello or Notion). Write a short recommendation with pros and cons. (180-250 words)"},
+{t:"it",lvl:"C1",title:"Cover letter",task:"Write a cover letter for a junior business analyst position at an international company in Budapest. (220-300 words)"},
+{t:"it",lvl:"C1",title:"Executive summary",task:"Summarise a project you worked on for a non-technical executive: the problem, the solution, the results and the next steps. (200-280 words)"},
+{t:"gen",lvl:"A2",title:"My weekend",task:"Describe your last weekend: where you went, what you did, and who you met. (80-120 words)"},
+{t:"gen",lvl:"B1",title:"Szeged for visitors",task:"A foreign friend is visiting Szeged. Write a message recommending three places and explaining why. (120-180 words)"},
+{t:"gen",lvl:"B1",title:"A challenge I overcame",task:"Write about a difficult situation you faced and how you dealt with it. (150-200 words)"},
+{t:"gen",lvl:"B2",title:"Opinion: remote work",task:"Is working from home better than working in an office? Give your opinion with arguments for both sides. (200-250 words)"},
+{t:"gen",lvl:"B2",title:"Film or series review",task:"Review a film or series you watched recently. Summarise it without spoilers and say who should watch it. (180-240 words)"},
+{t:"gen",lvl:"C1",title:"Opinion: AI and jobs",task:"'AI will create more jobs than it destroys.' Discuss, with examples. (250-320 words)"}
+];
+
+const SCENARIOS=[
+{id:"interview",t:"it",title:"Job interview",who:"Recruiter at an international IT company",desc:"Junior business analyst or developer role. Classic and behavioural questions.",start:"Hi, thanks for coming in today. To start, could you tell me a little about yourself?"},
+{id:"standup",t:"it",title:"Daily stand-up",who:"Scrum master",desc:"Give your update, explain a blocker, answer follow-up questions.",start:"Morning everyone. Let's go round. What did you work on yesterday, and what's the plan for today?"},
+{id:"client",t:"it",title:"Client requirements call",who:"Client who owns a small online shop",desc:"Ask questions to understand what the client wants built.",start:"Hi! So, I want a new website for my shop, but honestly I'm not sure where to start. What do you need to know from me?"},
+{id:"present",t:"it",title:"Presenting your project",who:"Professor in a project defence",desc:"Explain your project and defend your choices.",start:"Welcome. Please give us a short overview of your project, and then we'll have some questions."},
+{id:"smalltalk",t:"gen",title:"Small talk at a party",who:"Friendly Erasmus student from Ireland",desc:"Introduce yourself, ask questions, keep the conversation going.",start:"Hey, I don't think we've met! I'm Aoife. How do you know the host?"},
+{id:"debate",t:"gen",title:"Friendly debate",who:"Opinionated friend",desc:"Defend your opinion on social media, gaming, or city vs countryside life.",start:"Okay, honest question: do you think social media does more harm than good? I think it's terrible."},
+{id:"travel",t:"gen",title:"Problem at a hotel",who:"Hotel receptionist in London",desc:"Your room has a problem. Explain it and ask for a solution politely.",start:"Good evening, how can I help you?"},
+{id:"doctor",t:"gen",title:"At the doctor's",who:"GP doctor",desc:"Describe symptoms and understand advice.",start:"Hello, come in and take a seat. What seems to be the problem today?"}
+];
+const SPEAK_QS=["Describe your perfect working day in five years.","What is the most useful app on your phone and why?","Explain what Business IT is to a 10-year-old.","Talk about a person who influenced you.","What would you change about your university?","Describe a project you are proud of.","Should university education be free? Why?","Talk about your favourite place in Hungary.","How will AI change your future job?","Describe a time you worked in a team."];
+
+/* ---------------- State ---------------- */
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const addDays=(iso,n)=>{const d=new Date(iso+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const defaultState=()=>({v:1,profile:null,level:null,cards:{},custom:[],mistakes:[],writings:[],talks:[],activity:{},tests:[],missions:{}});
+let S=defaultState();
+let db=null, docRef=null, sample=null, dict=null, tts=null, saveTimer=null, storeMode="local";
+const LSKEY="english-gym-v1";
+function loadLocal(){try{const r=localStorage.getItem(LSKEY);if(r)return JSON.parse(r)}catch(e){}return null}
+function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify(S))}catch(e){}}
+function save(){
+  saveLocal();
+  clearTimeout(saveTimer);
+  if(docRef){saveTimer=setTimeout(async()=>{try{await docRef.set({json:JSON.stringify(S),updated:Date.now()});setSync("Saved to your account")}catch(e){setSync("Saved on this device")}},700)}
+}
+function setSync(t){document.getElementById("hdrSync").textContent=t}
+function logMinutes(m,kind){const d=today();S.activity[d]=(S.activity[d]||0)+m;S.missions[d]=S.missions[d]||{};if(kind)S.missions[d][kind]=true;save();renderHeader()}
+function streak(){let n=0,d=today();if(!S.activity[d])d=addDays(d,-1);while(S.activity[d]){n++;d=addDays(d,-1)}return n}
+const P=()=>S.profile||{level:"B1",minutes:30,goals:["Job interviews","Speaking confidently"],interests:["Tech","Business"],balance:50,name:"Paulik"};
+const level=()=>S.level||P().level||"B1";
+const lvlIdx=l=>LEVELS.indexOf(l);
+
+/* ---------------- Helpers ---------------- */
+const $=s=>document.querySelector(s);
+function h(tag,attrs={},...kids){const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs||{})){if(k==="class")e.className=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else if(k==="html")e.innerHTML=v;else if(v!==false&&v!=null)e.setAttribute(k,v===true?"":v)}for(const k of kids.flat()){if(k==null||k===false)continue;e.append(k.nodeType?k:document.createTextNode(String(k)))}return e}
+function toast(t){const e=$("#toast");e.textContent=t;e.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>e.hidden=true,2400)}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function allCards(){return DECK.concat(S.custom)}
+function trackOK(c){const b=P().balance;return true}
+function speakBtn(text){if(!tts)return null;return h("button",{class:"speak",type:"button",onclick:()=>{tts.speak(text,{language:"en"}).catch(()=>{})}},"listen")}
+
+/* ---------------- SRS ---------------- */
+function cardState(id){return S.cards[id]}
+function dueCards(){const d=today();return allCards().filter(c=>S.cards[c.id]&&S.cards[c.id].due<=d)}
+function newCards(n){
+  const L=lvlIdx(level()),bal=P().balance;
+  const pool=allCards().filter(c=>!S.cards[c.id]&&lvlIdx(c.lvl)<=L+1);
+  pool.sort((a,b)=>{const pa=(a.custom?-2:0)+Math.abs(lvlIdx(a.lvl)-L)+(a.track==="it"?(bal>=50?0:1):(bal>=50?1:0))+Math.random()*.9;const pb=(b.custom?-2:0)+Math.abs(lvlIdx(b.lvl)-L)+(b.track==="it"?(bal>=50?0:1):(bal>=50?1:0))+Math.random()*.9;return pa-pb});
+  return pool.slice(0,n);
+}
+function rate(c,r){
+  const s=S.cards[c.id]||{ease:2.5,interval:0,reps:0,lapses:0};
+  if(r===0){s.interval=1;s.lapses++;s.ease=Math.max(1.3,s.ease-.2);s.reps=0}
+  else{
+    if(s.reps===0)s.interval=r===1?1:r===2?1:3;
+    else if(s.reps===1)s.interval=r===1?2:r===2?3:6;
+    else s.interval=Math.round(s.interval*(r===1?1.2:r===2?s.ease:s.ease*1.3));
+    s.ease=Math.max(1.3,s.ease+(r===1?-.15:r===3?.15:0));s.reps++;
+  }
+  s.due=addDays(today(),s.interval);S.cards[c.id]=s;
+}
+const nextLabel=(c,r)=>{const s=S.cards[c.id];if(r===0)return"1d";if(!s||s.reps===0)return r===3?"3d":"1d";if(s.reps===1)return r===1?"2d":r===2?"3d":"6d";return Math.round(s.interval*(r===1?1.2:r===2?s.ease:s.ease*1.3))+"d"};
+
+/* ---------------- Views ---------------- */
+const TABS=[["today","Today"],["cards","Flashcards"],["quiz","Quiz"],["write","Writing lab"],["speak","Speaking"],["mistakes","Mistake log"],["progress","Progress"],["profile","Profile"]];
+let view="today";
+function go(v){view=v;try{history.replaceState(null,"","#"+v)}catch(e){}render()}
+function renderTabs(){const t=$("#tabs");t.innerHTML="";for(const[k,l]of TABS)t.append(h("button",{role:"tab","aria-selected":String(k===view),onclick:()=>go(k)},l))}
+function renderHeader(){$("#hdrLevel").textContent="Level "+(S.level||"?");const s=streak();$("#hdrStreak").textContent=s+"-day streak"}
+function render(){renderTabs();renderHeader();const m=$("#main");m.innerHTML="";(VIEWS[view]||VIEWS.today)(m);window.scrollTo({top:0})}
+
+const RHYTHM={1:["Vocabulary + quiz","quiz","General and IT words, then a 10-question quiz"],2:["Writing lab (IT and Business)","write","An email, report or update"],3:["Speaking roleplay (General)","speak","Small talk, debate or travel"],4:["Grammar quiz + mistake log","quiz","Quiz, then clear your mistake log"],5:["Speaking roleplay (IT and Business)","speak","Interview, stand-up or presentation"],6:["Writing lab (General)","write","Opinion text, review or story"],0:["Review day","progress","Cards, then your weekly log"]};
+
+const VIEWS={
+today(m){
+  const p=P(),dow=new Date().getDay(),r=RHYTHM[dow],dn=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][dow];
+  const ms=S.missions[today()]||{};
+  if(!S.profile||!S.level){
+    m.append(h("div",{class:"banner"},h("p",{},h("b",{},S.profile?"One step left: take the placement test.":"Start here: set up your profile and take a 20-question placement test."),h("br"),h("span",{class:"muted small"},"It takes about 8 minutes and sets your level, word list and writing prompts. Until then the app uses B1 defaults.")),h("button",{class:"btn primary",onclick:()=>go(S.profile?"test":"profile")},S.profile?"Take the test":"Set up profile")));
+  }
+  const due=dueCards().length, nnew=Math.min(10,newCards(10).length);
+  m.append(h("div",{class:"panel"},
+    h("div",{class:"eyebrow"},dn+" · "+p.minutes+" min plan"),
+    h("h1",{},"Today: "+r[0]),
+    h("ul",{class:"mission"},
+      h("li",{},h("span",{class:"check"+(ms.cards?" on":"")}),h("div",{class:"t"},h("b",{},"Flashcards"),h("div",{class:"muted small"},due+" due for review, "+nnew+" new")),h("span",{class:"min"},"10 min"),h("button",{class:"btn",onclick:()=>go("cards")},"Open")),
+      h("li",{},h("span",{class:"check"+(ms[r[1]]?" on":"")}),h("div",{class:"t"},h("b",{},r[0]),h("div",{class:"muted small"},r[2])),h("span",{class:"min"},(p.minutes-10)+" min"),h("button",{class:"btn primary",onclick:()=>go(r[1])},"Start"))
+    ),
+    h("p",{class:"note"},"Missed a day? Skip it, do not double up. Cards reschedule themselves.")
+  ));
+  const words=Object.values(S.cards).filter(c=>c.reps>0).length;
+  const scores=S.writings.filter(w=>w.score!=null).map(w=>w.score);
+  m.append(h("div",{class:"stats"},
+    stat(streak(),"day streak"),stat(words,"words learning"),stat(Object.values(S.activity).reduce((a,b)=>a+b,0),"minutes (est.)"),stat(scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):"–","avg writing score"),stat(S.mistakes.filter(x=>!x.fixed).length,"open mistakes")));
+  m.append(h("div",{class:"grid2"},
+    h("div",{class:"panel"},h("h3",{},"Quick practice"),h("p",{class:"muted small"},"Short on time? Do one of these."),h("div",{class:"row"},h("button",{class:"btn",onclick:()=>go("quiz")},"10-question quiz"),h("button",{class:"btn",onclick:()=>go("speak")},"60-second speaking"))),
+    h("div",{class:"panel"},h("h3",{},"This week's focus"),h("p",{class:"muted small"},weekFocus()))
+  ));
+},
+cards(m){
+  let queue=dueCards().concat(newCards(10)), i=0, shown=false, done=0;
+  const panel=h("div",{class:"panel"});m.append(panel);
+  m.append(addCardPanel());
+  function draw(){
+    panel.innerHTML="";
+    if(i>=queue.length){
+      panel.append(h("h2",{},done?"Session done":"Nothing due right now"),h("p",{class:"muted"},done?`You reviewed ${done} cards. Come back tomorrow for the next batch.`:"All reviews are done for today. Add your own words below or generate new ones."));
+      if(done){logMinutes(Math.max(1,Math.round(done*0.5)),"cards");}
+      panel.append(h("div",{class:"row"},h("button",{class:"btn",onclick:()=>{queue=newCards(10);i=0;draw()}},"Learn 10 more new words"),h("button",{class:"btn",onclick:()=>go("today")},"Back to today")));
+      return;
+    }
+    const c=queue[i],isNew=!S.cards[c.id];
+    panel.append(h("div",{class:"row"},h("span",{class:"eyebrow"},`Card ${i+1} of ${queue.length}`),h("span",{class:"tag "+(c.track==="it"?"it":"gen")},c.track==="it"?"IT & Business":"General"),h("span",{class:"tag"},c.lvl),isNew?h("span",{class:"tag"},"new"):null),
+      h("div",{class:"progressbar"},h("i",{style:`width:${i/queue.length*100}%`})));
+    const card=h("div",{class:"card"},h("div",{class:"word"},c.w),h("div",{class:"muted small"},c.pos),speakBtn(c.w));
+    if(shown){card.append(h("div",{class:"def"},c.def),h("div",{class:"ex"},"“"+c.ex+"”"),speakBtn(c.ex))}
+    panel.append(card);
+    if(!shown)panel.append(h("button",{class:"btn primary",onclick:()=>{shown=true;draw()}},"Show meaning"),h("p",{class:"muted small"},"Say the meaning out loud first, or make your own sentence with it."));
+    else{
+      const names=["Again","Hard","Good","Easy"],cls=["again","","",""+"easy"];
+      panel.append(h("div",{class:"rate"},names.map((n,k)=>h("button",{class:"btn "+cls[k],onclick:()=>{rate(c,k);if(k===0)queue.push(c);i++;done++;shown=false;save();draw()}},n,h("small",{},nextLabel(c,k))))));
+    }
+  }
+  draw();
+},
+quiz(m){
+  const L=lvlIdx(level());
+  const g=shuffle(GRAMMAR.filter(q=>Math.abs(lvlIdx(q.lvl)-L)<=1)).slice(0,6);
+  const vocab=shuffle(allCards().filter(c=>lvlIdx(c.lvl)<=L+1)).slice(0,4).map(c=>{const wrong=shuffle(allCards().filter(x=>x.id!==c.id)).slice(0,3).map(x=>x.def);const o=shuffle([c.def,...wrong]);return{q:`What does “${c.w}” mean?`,o,a:o.indexOf(c.def),t:"vocabulary",n:c.ex}});
+  const qs=shuffle(g.concat(vocab));let i=0,score=0,answered=false;
+  const panel=h("div",{class:"panel"});m.append(panel);
+  function draw(){
+    panel.innerHTML="";
+    if(i>=qs.length){logMinutes(5,"quiz");S.tests.push({d:today(),kind:"quiz",score,of:qs.length});save();
+      panel.append(h("div",{class:"eyebrow"},"Quiz result"),h("div",{class:"score"},`${score} / ${qs.length}`),h("p",{class:"muted"},score>=8?"Strong result. Your mistakes, if any, are in the mistake log.":"Wrong answers were added to your mistake log with a short explanation."),h("div",{class:"row"},h("button",{class:"btn primary",onclick:()=>go("quiz")},"New quiz"),h("button",{class:"btn",onclick:()=>go("mistakes")},"See mistake log")));return}
+    const q=qs[i];
+    panel.append(h("div",{class:"row"},h("span",{class:"eyebrow"},`Question ${i+1} of ${qs.length}`),h("span",{class:"tag"},q.t)),h("div",{class:"progressbar"},h("i",{style:`width:${i/qs.length*100}%`})),h("h2",{},q.q));
+    const opts=h("div",{class:"opts"});
+    const fb=h("div",{});
+    q.o.forEach((o,k)=>opts.append(h("button",{class:"opt",onclick:(e)=>{if(answered)return;answered=true;const btns=[...opts.children];btns[q.a].classList.add("right");if(k===q.a){score++;fb.append(h("p",{style:"color:var(--good)"},"Correct. "+(q.n||"")))}else{btns[k].classList.add("wrong");fb.append(h("p",{style:"color:var(--bad)"},"Not quite. "+(q.n||"")));S.mistakes.unshift({d:today(),type:q.t,src:"quiz",q:q.q,yours:o,correct:q.o[q.a],note:q.n||"",fixed:false});S.mistakes=S.mistakes.slice(0,300);save()}
+      fb.append(h("button",{class:"btn primary",style:"margin-top:10px",onclick:()=>{i++;answered=false;draw()}},i+1<qs.length?"Next":"See result"))}},o)));
+    panel.append(opts,fb);
+  }
+  draw();
+},
+test(m){
+  let i=0,ans=[];const panel=h("div",{class:"panel"});m.append(panel);
+  function draw(){
+    panel.innerHTML="";
+    if(i>=PLACEMENT.length){
+      const sc=ans.filter(Boolean).length;
+      const per={};PLACEMENT.forEach((q,k)=>{per[q.lvl]=(per[q.lvl]||0)+(ans[k]?1:0)});
+      let lv=sc<=7?"A2":sc<=12?"B1":sc<=16?"B2":"C1";
+      S.level=lv;S.tests.push({d:today(),kind:"placement",score:sc,of:20,level:lv});logMinutes(8,"test");save();renderHeader();
+      panel.append(h("div",{class:"eyebrow"},"Placement result"),h("div",{class:"score"},lv),h("p",{},`You scored ${sc} of 20. A2 ${per.A2||0}/5 · B1 ${per.B1||0}/5 · B2 ${per.B2||0}/5 · C1 ${per.C1||0}/5.`),
+        h("p",{class:"muted"},"This is a grammar and vocabulary estimate. Writing and speaking feedback will refine it. Re-take it every 4 weeks from the Progress tab."),
+        h("button",{class:"btn primary",onclick:()=>go("today")},"Go to today's plan"));return}
+    const q=PLACEMENT[i];
+    panel.append(h("div",{class:"eyebrow"},`Placement test · ${i+1} of 20`),h("div",{class:"progressbar"},h("i",{style:`width:${i/20*100}%`})),h("h2",{},q.q),
+      h("div",{class:"opts"},q.o.map((o,k)=>h("button",{class:"opt",onclick:()=>{ans[i]=k===q.a;i++;draw()}},o))),
+      h("button",{class:"btn ghost",onclick:()=>{ans[i]=false;i++;draw()}},"I don't know"));
+  }
+  draw();
+},
+write(m){
+  const L=lvlIdx(level());
+  const prompts=PROMPTS.filter(p=>Math.abs(lvlIdx(p.lvl)-L)<=1);
+  let cur=prompts[0];
+  try{const d=localStorage.getItem("eg-draft");if(d){const o=JSON.parse(d);cur=PROMPTS.find(p=>p.title===o.title)||cur}}catch(e){}
+  const sel=h("select",{id:"promptSel",onchange:()=>{cur=prompts.find(p=>p.title===sel.value)||{t:"gen",lvl:level(),title:"Free writing",task:"Write about anything you like."};task.textContent=cur.task}},
+    prompts.map(p=>h("option",{value:p.title,selected:p.title===cur.title},(p.t==="it"?"IT & Business · ":"General · ")+p.title+" ("+p.lvl+")")),h("option",{value:"__free"},"Free writing (your own topic)"));
+  const task=h("p",{},cur.task);
+  const ta=h("textarea",{id:"writeText",placeholder:"Write your text here..."});
+  try{const d=JSON.parse(localStorage.getItem("eg-draft")||"null");if(d)ta.value=d.text}catch(e){}
+  const wc=h("span",{class:"muted small"},"0 words");
+  const upd=()=>{wc.textContent=(ta.value.trim().split(/\s+/).filter(Boolean).length)+" words";try{localStorage.setItem("eg-draft",JSON.stringify({title:cur.title,text:ta.value}))}catch(e){}};
+  ta.addEventListener("input",upd);upd();
+  const out=h("div",{class:"fb"});
+  const btn=h("button",{class:"btn primary",onclick:async()=>{
+    const text=ta.value.trim();if(text.split(/\s+/).length<20){toast("Write at least 20 words first.");return}
+    if(!sample){out.innerHTML="";out.append(selfCheck());return}
+    btn.disabled=true;out.innerHTML="";out.append(h("p",{class:"thinking"},"Claude is reading your text. This takes 10 to 40 seconds."));
+    try{
+      const prompt=`You are an encouraging but precise English writing tutor for Paulik, a 23-year-old Hungarian Business IT student. Current CEFR level: ${level()}. Goals: ${P().goals.join(", ")}.
+Task given: "${cur.task}"
+Student text:
+"""${text}"""
+Return ONLY JSON with this shape:
+{"score": number 1-10 (relative to the task and a ${level()} learner), "cefr_estimate": "A2|B1|B2|C1|C2", "summary": "2 sentences: main strength and the one thing to improve", "corrections": [{"original":"exact phrase from text","corrected":"fixed phrase","explanation":"one short line","type":"one of: articles, prepositions, tenses, word order, verb patterns, collocations, vocabulary, spelling, punctuation, style, register"}], "improved_version":"the full text rewritten naturally at about one level higher, keeping the student's ideas", "useful_phrases":[{"w":"phrase","def":"meaning","ex":"example sentence"}]}
+List up to 10 corrections, the most important first. Give 3 useful phrases related to the task. Pay special attention to errors typical for Hungarian speakers (articles, prepositions, present perfect, word order).`;
+      const r=await sample.json(prompt,{modelTier:"default"});
+      showFeedback(r,text);
+    }catch(e){out.innerHTML="";if(e&&e.code==="not_granted"){out.append(h("p",{class:"muted"},"Claude feedback is turned off for this page. Here is a self-check list instead."),selfCheck())}else out.append(h("p",{style:"color:var(--bad)"},"Feedback failed ("+(e&&e.code||"error")+"). Your text is saved; try again in a minute."))}
+    btn.disabled=false;
+  }},"Get feedback");
+  function showFeedback(r,text){
+    out.innerHTML="";
+    S.writings.unshift({d:today(),title:cur.title,track:cur.t,words:text.split(/\s+/).length,score:r.score,cefr:r.cefr_estimate,text:text.slice(0,3000)});S.writings=S.writings.slice(0,40);
+    (r.corrections||[]).forEach(c=>S.mistakes.unshift({d:today(),type:c.type||"writing",src:"writing",q:c.original,yours:c.original,correct:c.corrected,note:c.explanation,fixed:false}));
+    S.mistakes=S.mistakes.slice(0,300);logMinutes(15,"write");
+    out.append(h("div",{class:"row"},h("div",{class:"score"},(r.score??"–")+"/10"),h("div",{},h("div",{class:"eyebrow"},"Estimated level"),h("b",{},r.cefr_estimate||"–"))),h("p",{},r.summary||""));
+    if((r.corrections||[]).length){out.append(h("h3",{},"Corrections"));(r.corrections).forEach(c=>out.append(h("div",{class:"corr"},h("div",{},h("del",{},c.original)," → ",h("ins",{},c.corrected)),h("div",{class:"small muted"},(c.type?"["+c.type+"] ":"")+(c.explanation||"")))))}
+    if(r.improved_version)out.append(h("h3",{},"A more natural version"),h("p",{style:"white-space:pre-wrap"},r.improved_version),speakBtn(r.improved_version));
+    if((r.useful_phrases||[]).length){out.append(h("h3",{},"Useful phrases"),h("div",{},r.useful_phrases.map(p=>h("p",{},h("b",{},p.w)," – "+p.def+" ",h("i",{class:"muted"},p.ex)))),h("button",{class:"btn",onclick:(e)=>{r.useful_phrases.forEach(p=>addCustom(p.w,"phrase",p.def,p.ex,cur.t));e.target.disabled=true;toast("Added to your flashcards")}},"Add these to my flashcards"))}
+    out.append(h("p",{class:"note"},"Corrections were added to your mistake log. Rewrite the text once using the feedback: that second draft is where most learning happens."));
+    try{localStorage.removeItem("eg-draft")}catch(e){}
+  }
+  const micBtn=dict?h("button",{class:"btn",type:"button",onclick:()=>dictateInto(ta,micBtn)},"Dictate"):null;
+  m.append(h("div",{class:"panel"},h("div",{class:"eyebrow"},"Writing lab · level "+level()),h("label",{class:"f"},"Prompt",sel),task,ta,h("div",{class:"row"},wc,h("span",{style:"flex:1"}),micBtn,btn),out));
+  if(S.writings.length){m.append(h("div",{class:"panel"},h("h3",{},"Your recent texts"),h("div",{class:"tablewrap"},h("table",{},h("thead",{},h("tr",{},h("th",{},"Date"),h("th",{},"Prompt"),h("th",{},"Words"),h("th",{},"Score"),h("th",{},"Level"))),h("tbody",{},S.writings.slice(0,10).map(w=>h("tr",{},h("td",{class:"num"},w.d),h("td",{},w.title),h("td",{class:"num"},w.words),h("td",{class:"num"},w.score??"–"),h("td",{},w.cefr||"–"))))))))}
+  sel.addEventListener("change",()=>{if(sel.value==="__free"){cur={t:"gen",lvl:level(),title:"Free writing",task:"Write about anything you like: your day, your opinion, a project. Aim for 150+ words."};task.textContent=cur.task}});
+},
+speak(m){
+  m.append(h("div",{class:"panel"},h("div",{class:"eyebrow"},"Speaking roleplay"),h("h2",{},"Pick a scenario"),h("p",{class:"muted small"},sample?(dict?"Speak with the Dictate button or type. Claude plays the other person, then gives feedback.":"Type your answers (dictation works in Chrome or the Claude desktop app). Claude plays the other person, then gives feedback."):"Claude roleplay is unavailable in this view. Use the 60-second speaking drill below."),
+    h("div",{class:"scen"},SCENARIOS.map(s=>h("button",{disabled:!sample,onclick:()=>roleplay(m,s)},h("span",{class:"tag "+(s.t==="it"?"it":"gen")},s.t==="it"?"IT & Business":"General"),h("b",{},s.title),h("span",{class:"muted small"},s.desc))))));
+  // 60 second drill
+  let q=SPEAK_QS[Math.floor(Math.random()*SPEAK_QS.length)],timer=null,left=60;
+  const qEl=h("h3",{},q),tEl=h("div",{class:"score"},"60s");
+  const startB=h("button",{class:"btn primary",onclick:()=>{clearInterval(timer);left=60;tEl.textContent="60s";timer=setInterval(()=>{left--;tEl.textContent=left+"s";if(left<=0){clearInterval(timer);tEl.textContent="Done";logMinutes(2,"speak");toast("Nice. Try the same question again and aim for fewer pauses.")}},1000)}},"Start 60 seconds");
+  m.append(h("div",{class:"panel"},h("div",{class:"eyebrow"},"60-second speaking drill"),h("p",{class:"muted small"},"Speak out loud about the topic without stopping. Then repeat it once: the second try is always better."),qEl,h("div",{class:"row"},tEl,startB,h("button",{class:"btn",onclick:()=>{q=SPEAK_QS[Math.floor(Math.random()*SPEAK_QS.length)];qEl.textContent=q}},"Another topic"))));
+},
+mistakes(m){
+  const open=S.mistakes.filter(x=>!x.fixed);
+  const by={};open.forEach(x=>{(by[x.type]=by[x.type]||[]).push(x)});
+  const types=Object.entries(by).sort((a,b)=>b[1].length-a[1].length);
+  m.append(h("div",{class:"panel"},h("div",{class:"eyebrow"},"Mistake log"),h("h2",{},open.length?`${open.length} open mistakes in ${types.length} areas`:"No open mistakes"),
+    h("p",{class:"muted small"},"Every wrong quiz answer and writing correction lands here. Read each one, say the correct version out loud, then mark it fixed."),
+    types.length?h("div",{class:"chips"},types.map(([t,a])=>h("span",{class:"tag"},t+" · "+a.length))):h("p",{class:"muted"},"Take a quiz or get writing feedback, and your mistakes will appear here grouped by type.")));
+  for(const[t,arr]of types){
+    m.append(h("div",{class:"panel"},h("h3",{},t),arr.slice(0,30).map(x=>h("div",{class:"corr"},
+      h("div",{},x.src==="quiz"?h("span",{},x.q+" "):null,h("del",{},x.yours)," → ",h("ins",{},x.correct)),
+      h("div",{class:"row"},h("span",{class:"small muted",style:"flex:1"},x.note+" · "+x.d),h("button",{class:"btn ghost",onclick:()=>{x.fixed=true;save();logMinutes(1,"mistakes");render()}},"Mark fixed"))))));
+  }
+  const fixed=S.mistakes.filter(x=>x.fixed).length;if(fixed)m.append(h("p",{class:"muted small"},fixed+" mistakes fixed so far."));
+},
+progress(m){
+  const days=[];for(let k=13;k>=0;k--){const d=addDays(today(),-k);days.push([d,S.activity[d]||0])}
+  const max=Math.max(30,...days.map(d=>d[1]));
+  const words=Object.values(S.cards).filter(c=>c.reps>0).length,mature=Object.values(S.cards).filter(c=>c.interval>=21).length;
+  m.append(h("div",{class:"panel"},h("div",{class:"eyebrow"},"Progress"),h("h2",{},"Level "+(S.level||"not tested yet")),
+    h("div",{class:"stats"},stat(streak(),"day streak"),stat(words,"words learning"),stat(mature,"words mastered (21d+)"),stat(S.writings.length,"texts written"),stat(S.talks.length,"roleplays")),
+    h("h3",{},"Minutes per day, last 14 days (estimated)"),
+    h("div",{class:"bars"},days.map(([d,v])=>h("div",{class:v?"":"zero",style:`height:${v/max*100}%`,title:d+": "+v+" min"}))),
+    h("div",{class:"barlabels"},days.map(([d],k)=>h("span",{},k%2?"":d.slice(8))))));
+  const tests=S.tests.filter(t=>t.kind==="placement");
+  m.append(h("div",{class:"panel"},h("h3",{},"Level tests"),tests.length?h("div",{class:"tablewrap"},h("table",{},h("thead",{},h("tr",{},h("th",{},"Date"),h("th",{},"Score"),h("th",{},"Level"))),h("tbody",{},tests.slice().reverse().map(t=>h("tr",{},h("td",{class:"num"},t.d),h("td",{class:"num"},t.score+"/20"),h("td",{},t.level)))))):h("p",{class:"muted"},"No test yet."),h("button",{class:"btn primary",onclick:()=>go("test")},tests.length?"Re-take the placement test":"Take the placement test"),h("p",{class:"note"},"Re-test every 4 weeks (end of weeks 4, 8 and 12 in your plan).")));
+  // weekly summary
+  const wk=[];for(let k=6;k>=0;k--)wk.push(addDays(today(),-k));
+  const mins=wk.reduce((a,d)=>a+(S.activity[d]||0),0),wr=S.writings.filter(w=>wk.includes(w.d)),avg=wr.length?(wr.reduce((a,w)=>a+(w.score||0),0)/wr.length).toFixed(1):"–";
+  const line=`${today()}\t${mins}\t${words}\t${wr.length}\t${avg}\t${S.talks.filter(t=>wk.includes(t.d)).length}\t${S.level||""}`;
+  m.append(h("div",{class:"panel"},h("h3",{},"Weekly log line"),h("p",{class:"muted small"},"Every Sunday, copy this line into your progress sheet (columns: date, minutes, words, texts, avg score, roleplays, level)."),h("pre",{style:"overflow-x:auto;background:var(--sunk);padding:10px;border-radius:6px;font-family:var(--mono);font-size:13px;margin:0"},line.replace(/\t/g,"  |  ")),h("button",{class:"btn",onclick:()=>{navigator.clipboard.writeText(line).then(()=>toast("Copied. Paste it into the sheet.")).catch(()=>toast("Copy blocked here. Select the line and copy it."))}},"Copy line")));
+},
+profile(m){
+  const p=P();
+  const goals=["Job interviews","University courses","Reading tech docs","Speaking confidently","Business emails","Travel","Exam (IELTS / Cambridge)","Films and series without subtitles"];
+  const ints=["Tech","Business","Startups","Gaming","Sport","Music","Travel","Film and series","Science","Cars"];
+  const f=h("form",{class:"panel",onsubmit:e=>{e.preventDefault();const fd=new FormData(f);S.profile={name:fd.get("name")||"Paulik",level:fd.get("level"),minutes:+fd.get("minutes"),goals:fd.getAll("goals"),interests:fd.getAll("interests"),balance:+fd.get("balance")};if(!S.level)S.level=null;save();toast("Profile saved");go(S.level?"today":"test")}},
+    h("div",{class:"eyebrow"},"Profile"),h("h2",{},S.profile?"Your learning profile":"Set up your profile"),h("p",{class:"muted small"},"These answers shape your word list, prompts and daily plan. You can change them any time."),
+    h("label",{class:"f"},"Name",h("input",{type:"text",id:"pname",name:"name",value:p.name||"Paulik"})),
+    h("label",{class:"f"},"Your own guess of your level",h("select",{id:"plevel",name:"level"},[["A2","A2 · simple everyday English"],["B1","B1 · most daily situations"],["B2","B2 · technical and abstract topics"],["C1","C1 · fluent and precise"]].map(([v,l])=>h("option",{value:v,selected:p.level===v},l)))),
+    h("label",{class:"f"},"Minutes per day you can really commit",h("select",{id:"pmin",name:"minutes"},[15,30,45,60].map(v=>h("option",{value:v,selected:p.minutes===v},v+" minutes")))),
+    h("fieldset",{style:"border:0;padding:0;margin:0;display:grid;gap:8px"},h("legend",{style:"font-weight:500;font-size:14px;margin-bottom:6px"},"Main goals"),h("div",{class:"chips"},goals.map(g=>h("label",{},h("input",{type:"checkbox",name:"goals",value:g,checked:p.goals.includes(g)}),g)))),
+    h("fieldset",{style:"border:0;padding:0;margin:0;display:grid;gap:8px"},h("legend",{style:"font-weight:500;font-size:14px;margin-bottom:6px"},"Interests (for topics and generated words)"),h("div",{class:"chips"},ints.map(g=>h("label",{},h("input",{type:"checkbox",name:"interests",value:g,checked:p.interests.includes(g)}),g)))),
+    h("label",{class:"f"},"Track balance: General ← → IT and Business",h("input",{type:"range",id:"pbal",name:"balance",min:0,max:100,step:10,value:p.balance})),
+    h("div",{class:"row"},h("button",{class:"btn primary",type:"submit"},S.profile?"Save profile":"Save and take the placement test"))
+  );
+  m.append(f);
+  m.append(h("div",{class:"panel"},h("h3",{},"Where your progress is saved"),h("p",{class:"muted small"},storeMode==="db"?"Your progress is saved to your Claude account, so it follows you between phone and laptop. Only you can see it.":"Progress is saved in this browser only. Open the app while signed in to claude.ai to sync between devices.")));
+}
+};
+function stat(v,l){return h("div",{class:"stat"},h("b",{},v),h("span",{},l))}
+function weekFocus(){const w=Math.floor((Date.now()-new Date(S.started||Date.now()).getTime())/6048e5)+1;if(w<=4)return`Week ${w} of 12: habit and foundations. Daily cards, core IT vocabulary, articles and tenses.`;if(w<=8)return`Week ${w} of 12: output. More writing and speaking, formal emails, meetings.`;if(w<=12)return`Week ${w} of 12: fluency and precision. Presentations, reports, idioms.`;return"12 weeks done. Re-test and set goals for the next block."}
+function selfCheck(){return h("div",{class:"panel"},h("h3",{},"Self-check list"),h("ul",{},["Articles: does every singular countable noun have a / an / the?","Prepositions: in / on / at for time and place, depend on, interested in.","Tenses: past simple for finished time, present perfect for life experience and 'this week'.","Linkers: did you use at least three (however, therefore, whereas, although)?","Register: formal email = no contractions, polite requests (Could you...?)."].map(t=>h("li",{},t))))}
+function addCustom(w,pos,def,ex,track){if(allCards().some(c=>c.w.toLowerCase()===w.toLowerCase()))return;S.custom.push({id:"c"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),w,pos:pos||"",def,ex:ex||"",track:track||"gen",lvl:level(),custom:true});save()}
+function addCardPanel(){
+  const w=h("input",{type:"text",id:"nw",placeholder:"Word or phrase"}),d=h("input",{type:"text",id:"nd",placeholder:"Meaning (English or Hungarian)"}),e=h("input",{type:"text",id:"ne",placeholder:"Example sentence (optional)"});
+  const tr=h("select",{id:"nt"},h("option",{value:"gen"},"General"),h("option",{value:"it"},"IT & Business"));
+  const gen=h("button",{class:"btn",disabled:!sample,onclick:async()=>{
+    gen.disabled=true;gen.textContent="Generating...";
+    try{const p=P();const known=allCards().map(c=>c.w).join(", ");
+      const r=await sample.json(`Create 10 English vocabulary flashcards for a ${level()} learner (23, Hungarian Business IT student). Interests: ${p.interests.join(", ")}. Goals: ${p.goals.join(", ")}. Mix: ${p.balance}% IT and Business, the rest general English (phrasal verbs, collocations, idioms). Avoid these known items: ${known}. Return ONLY a JSON array of {"w":"word or phrase","pos":"part of speech","def":"simple English definition","ex":"natural example sentence","track":"it or gen"}.`,{modelTier:"default"});
+      (Array.isArray(r)?r:[]).forEach(c=>c&&c.w&&addCustom(c.w,c.pos,c.def,c.ex,c.track==="it"?"it":"gen"));toast("Added new words. Open Flashcards to learn them.");go("cards");
+    }catch(err){toast(err&&err.code==="not_granted"?"Claude access is off for this page.":"Could not generate words. Try again later.");gen.disabled=false;gen.textContent="Generate 10 words for me"}
+  }},"Generate 10 words for me");
+  return h("div",{class:"panel"},h("h3",{},"Add your own words"),h("p",{class:"muted small"},"Words from lectures, films or work stick best. "+S.custom.length+" of your own words so far."),
+    h("div",{class:"grid2"},w,d),e,h("div",{class:"row"},tr,h("button",{class:"btn primary",onclick:()=>{if(!w.value.trim()||!d.value.trim()){toast("Add a word and its meaning.");return}addCustom(w.value.trim(),"",d.value.trim(),e.value.trim(),tr.value);w.value=d.value=e.value="";toast("Card added")}},"Add card"),gen));
+}
+async function dictateInto(ta,btn){
+  if(!dict)return;
+  if(btn.dataset.on){btn.textContent="Dictate";delete btn.dataset.on;try{await dict.stop()}catch(e){}return}
+  const base=ta.value;let acc="";
+  dict.onPartial(({text})=>{ta.value=(base?base+" ":"")+acc+text});
+  dict.onFinal(({text})=>{acc+=text+" ";ta.value=(base?base+" ":"")+acc;ta.dispatchEvent(new Event("input"))});
+  dict.onState(({state})=>{if(state==="idle"){btn.textContent="Dictate";delete btn.dataset.on}});
+  btn.dataset.on="1";btn.textContent="Stop dictating";
+  dict.start().catch(e=>{btn.textContent="Dictate";delete btn.dataset.on;toast(e&&e.code==="not_granted"?"Microphone is off for this page. Type instead.":"Dictation is not available. Type instead.")});
+}
+function roleplay(m,s){
+  m.innerHTML="";const msgs=[{role:"assistant",content:s.start}];let turns=0;
+  const chat=h("div",{class:"chat"});const ta=h("textarea",{id:"rpInput",style:"min-height:80px",placeholder:"Your answer..."});
+  const sys=`You are roleplaying as: ${s.who}. Scenario: ${s.title}. ${s.desc} The other person is Paulik, a 23-year-old Hungarian Business IT student practising English at level ${level()}. Stay in character, speak naturally at a level slightly above ${level()}, keep each reply to 1-3 sentences, and always end with a question or prompt that keeps the conversation going. Do not correct mistakes during the roleplay.`;
+  function draw(){chat.innerHTML="";msgs.forEach(x=>chat.append(h("div",{class:"msg "+(x.role==="user"?"me":"them")},h("div",{class:"who"},x.role==="user"?"You":s.who.split(" ").slice(0,3).join(" "),x.role==="user"?null:speakBtn(x.content)),x.content)));chat.scrollTop=chat.scrollHeight}
+  async function send(){
+    const t=ta.value.trim();if(!t)return;ta.value="";msgs.push({role:"user",content:t});turns++;draw();
+    const th=h("div",{class:"msg them thinking"},"...");chat.append(th);sendB.disabled=true;
+    try{const input=[{role:"user",content:sys+"\n\nStart the conversation."},...msgs];
+      const r=await sample(input,{modelTier:"quick",cache:false});msgs.push({role:"assistant",content:r.text.trim()});draw();
+      if(tts&&autoSpeak.checked)tts.speak(r.text.trim(),{language:"en"}).catch(()=>{});
+    }catch(e){th.textContent="(No reply: "+(e&&e.code||"error")+". Try again.)"}
+    sendB.disabled=false;
+  }
+  const sendB=h("button",{class:"btn primary",onclick:send},"Send");
+  const mic=dict?h("button",{class:"btn",type:"button",onclick:()=>dictateInto(ta,mic)},"Dictate"):null;
+  const autoSpeak=h("input",{type:"checkbox",id:"autospeak",checked:!!tts});
+  const fb=h("div",{class:"fb"});
+  const endB=h("button",{class:"btn",onclick:async()=>{
+    if(turns<2){toast("Answer at least twice before feedback.");return}
+    endB.disabled=true;fb.innerHTML="";fb.append(h("p",{class:"thinking"},"Claude is reviewing your answers..."));
+    try{const mine=msgs.filter(x=>x.role==="user").map(x=>"- "+x.content).join("\n");
+      const r=await sample.json(`You are an English speaking coach. Scenario: ${s.title} (${s.who}). Learner level: ${level()}, Hungarian speaker. Here is the full conversation:\n${msgs.map(x=>(x.role==="user"?"Learner: ":"Partner: ")+x.content).join("\n")}\n\nReturn ONLY JSON: {"fluency":1-10,"accuracy":1-10,"vocabulary":1-10,"summary":"2 sentences","corrections":[{"original":"learner phrase","corrected":"better phrase","explanation":"short","type":"articles|prepositions|tenses|word order|vocabulary|register|collocations"}],"better_phrases":[{"w":"phrase a native would use here","def":"meaning","ex":"example"}]}. Up to 6 corrections, 4 phrases.`,{modelTier:"default"});
+      fb.innerHTML="";
+      S.talks.unshift({d:today(),id:s.id,turns,fl:r.fluency,ac:r.accuracy,vo:r.vocabulary});S.talks=S.talks.slice(0,60);
+      (r.corrections||[]).forEach(c=>S.mistakes.unshift({d:today(),type:c.type||"speaking",src:"speaking",q:c.original,yours:c.original,correct:c.corrected,note:c.explanation,fixed:false}));
+      logMinutes(10,"speak");
+      fb.append(h("div",{class:"stats"},stat(r.fluency??"–","fluency /10"),stat(r.accuracy??"–","accuracy /10"),stat(r.vocabulary??"–","vocabulary /10")),h("p",{},r.summary||""));
+      (r.corrections||[]).forEach(c=>fb.append(h("div",{class:"corr"},h("div",{},h("del",{},c.original)," → ",h("ins",{},c.corrected)),h("div",{class:"small muted"},c.explanation||""))));
+      if((r.better_phrases||[]).length){fb.append(h("h3",{},"Phrases to steal"),...r.better_phrases.map(p=>h("p",{},h("b",{},p.w)," – "+p.def)),h("button",{class:"btn",onclick:e=>{r.better_phrases.forEach(p=>addCustom(p.w,"phrase",p.def,p.ex,s.t));e.target.disabled=true;toast("Added to flashcards")}},"Add phrases to my flashcards"))}
+    }catch(e){fb.innerHTML="";fb.append(h("p",{style:"color:var(--bad)"},"Feedback failed. Try again."))}
+    endB.disabled=false;
+  }},"Finish and get feedback");
+  m.append(h("div",{class:"panel"},h("div",{class:"row"},h("button",{class:"btn ghost",onclick:()=>go("speak")},"← Scenarios"),h("span",{class:"eyebrow"},s.title+" · "+s.who)),chat,ta,h("div",{class:"row"},mic,tts?h("label",{class:"small row",style:"gap:6px"},autoSpeak,"Read replies aloud"):null,h("span",{style:"flex:1"}),endB,sendB),h("p",{class:"muted small"},"Tip: answer in full sentences, then try to use one new phrase per reply."),fb));
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+  draw();
+}
+
+/* ---------------- Boot ---------------- */
+(function boot(){
+  const local=loadLocal();if(local)S=Object.assign(defaultState(),local);
+  if(!S.started){S.started=today()}
+  const hv=(location.hash||"").slice(1);if(TABS.some(t=>t[0]===hv)||hv==="test")view=hv;
+  render();
+  if(!window.claude||!window.claude.use)return;
+  window.claude.use("sample").then(x=>{sample=x;if(x&&["write","speak","cards"].includes(view))render()}).catch(()=>{});
+  window.claude.use("dictation").then(x=>{dict=x;if(x&&["write"].includes(view))render()}).catch(()=>{});
+  window.claude.use("tts").then(x=>{tts=x}).catch(()=>{});
+  Promise.all([window.claude.use("db"),window.claude.use("user")]).then(async([d,u])=>{
+    if(!d||!u)return;const id=await u.id();if(!id)return;
+    db=d;docRef=db.doc("data/users/"+id+"/state");storeMode="db";setSync("Syncing…");
+    const t=setTimeout(()=>setSync("Saved on this device"),10000);
+    try{const snap=await docRef.get();clearTimeout(t);const data=snap.exists&&snap.data();
+      if(data&&data.json){const remote=JSON.parse(data.json);S=Object.assign(defaultState(),remote);saveLocal();setSync("Saved to your account");render()}
+      else{setSync("Saved to your account");if(local)save()}
+    }catch(e){clearTimeout(t);setSync("Saved on this device")}
+  }).catch(()=>{});
+})();
+</script>
